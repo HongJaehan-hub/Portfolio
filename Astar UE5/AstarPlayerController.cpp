@@ -6,7 +6,6 @@
 AAstarPlayerController::AAstarPlayerController()
 {
     bIsRightMouseButtonDown = false;
-    UE_LOG(LogTemp, Warning, TEXT("AAstarPlayerController"));
 }
 
 void AAstarPlayerController::SetupInputComponent()

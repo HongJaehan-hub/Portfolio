@@ -110,10 +110,18 @@ void AAstarModeBase::StartAstarAlgorithm()
     }
 
     TArray<FVector2D> Path = AStar::FindPath(Map, ArrayPoints[0], ArrayPoints[1]);
+    Path.Push(ArrayPoints[0]);
+
     for(int i = 0; i < Path.Num(); ++i)
     {
         int32 row = (int32)Path[i].X;
         int32 col = (int32)Path[i].Y;
-        TileArray[row][col]->SetPathTile();
+        
+        FVector2D Diff;
+        if(i >= 1)
+        {
+            Diff = FVector2D((int32)Path[i - 1].X - row, (int32)Path[i - 1].Y - col);
+        }
+        TileArray[row][col]->SetPathTile(Diff);
     }
 }

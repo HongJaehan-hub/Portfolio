@@ -33,8 +33,6 @@ int GetArrowIndex(const vector<Node>& close, Node& curentNode)
 	Node parentNode = close[curentNode.parentIndex];
 	for (int i = 0; i < 8; ++i)
 	{
-		int r = curentNode.row - parentNode.row;
-		int c = curentNode.col - parentNode.col;
 		if ((row[i] == curentNode.row - parentNode.row) && (col[i] == curentNode.col - parentNode.col))
 		{
 			return i + 1;

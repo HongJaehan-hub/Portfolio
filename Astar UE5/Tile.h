@@ -28,9 +28,6 @@ public:
 	void Reset();
 
 	UFUNCTION()
-	void OnMouseClicked();
-
-	UFUNCTION()
 	void OnLeftClicked();
 
 	UFUNCTION()
@@ -40,7 +37,7 @@ public:
 	virtual void NotifyActorBeginCursorOver() override;
 
 	UFUNCTION()
-	void SetPathTile();
+	void SetPathTile(FVector2D Diff);
 	
 	UPROPERTY(EditAnywhere)
 	int32 Row;
@@ -57,11 +54,17 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Materials")
 	UMaterialInterface* m_PathMaterial;
 
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+    USceneComponent* ArrowComponent;
+
 	UPROPERTY(EditAnywhere)
 	bool IsPointTile;
 
 	UPROPERTY(EditAnywhere)
 	bool IsWallTile;
+
+	UPROPERTY()
+	TMap<FIntPoint, float> RotationMap;
 
 private:
 	AAstarPlayerController* AstarPlayerController;

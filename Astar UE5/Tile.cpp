@@ -10,13 +10,21 @@
 #include "AstarModeBase.h"
 #include "Components/StaticMeshComponent.h"
 
-
 ATile::ATile()
 {
     PrimaryActorTick.bCanEverTick = true;
     AutoReceiveInput = EAutoReceiveInput::Player0;
     IsPointTile = false;
     IsWallTile = false;
+
+    int32 row[8] = { 1, 1, 0, -1, -1, -1, 0, 1 };
+    int32 col[8] = { 0, 1, 1, 1, 0, -1, -1, -1 };
+    
+    for(int32 i = 0; i < 8; ++i)
+    {
+        FIntPoint Key(row[i], col[i]);
+        RotationMap.Add(Key, i * 45.0f);
+    }
 }
 
 void ATile::BeginPlay()
@@ -27,6 +35,23 @@ void ATile::BeginPlay()
     if(PlayerController)
     {
         AstarPlayerController = Cast<AAstarPlayerController>(PlayerController);
+    }
+
+    TArray<UActorComponent*> Components;
+    GetComponents<UActorComponent>(Components);
+
+    for (UActorComponent* Component : Components)
+    {
+        if (Component && Component->GetName() == TEXT("ArrowScene"))
+        {
+            ArrowComponent = Cast<USceneComponent>(Component);
+            break;
+        }
+    }
+
+    if(ArrowComponent)
+    {
+        ArrowComponent->SetVisibility(false, true);
     }
 }
 
@@ -39,6 +64,12 @@ void ATile::Reset()
     if(mesh)
     {
         mesh->SetMaterial(0, m_DefaultMaterial);
+    }
+
+    
+    if(ArrowComponent)
+    {
+        ArrowComponent->SetVisibility(false, true);
     }
 }
 
@@ -128,6 +159,7 @@ void ATile::OnRightClicked()
 
 void ATile::NotifyActorBeginCursorOver()
 {
+    // 마우스 커서 오른쪽 클릭 상태에서 커서 오버 시 벽 설치
     if(IsPointTile)
         return;
 
@@ -145,11 +177,23 @@ void ATile::NotifyActorBeginCursorOver()
     }
 }
 
-void ATile::SetPathTile()
+void ATile::SetPathTile(FVector2D Diff)
 {
     UStaticMeshComponent* mesh = this->GetStaticMeshComponent();
     if(mesh)
     {
         mesh->SetMaterial(0, m_PathMaterial);
+    }
+
+    if(ArrowComponent)
+    {
+        ArrowComponent->SetVisibility(true, true);
+        FRotator Rotator;
+
+        const float* ValPtr = RotationMap.Find(FIntPoint((int32)Diff.X, (int32)Diff.Y));
+        if(ValPtr)
+        {
+            ArrowComponent->SetRelativeRotation(FRotator(0.0f, *ValPtr, 0.0f));
+        }
     }
 }

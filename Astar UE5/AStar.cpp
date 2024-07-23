@@ -22,9 +22,8 @@ public:
         return F > other.F; // F 값이 작은 것이 우선순위가 높음
     }
 };
-
-int cx[4] = { 0, 1, 0, -1 };
-int cy[4] = { -1, 0, 1, 0 };
+int row[8] = { 1, 0, -1, 0, 1, -1, -1, 1 };
+int col[8] = { 0, 1, 0, -1, 1, 1, -1, -1 };
 
 AStar::AStar()
 {
@@ -57,7 +56,6 @@ TArray<FVector2D> AStar::FindPath(TArray<TArray<int>> Map, FVector2D Start, FVec
 
 		// Close List에 꺼내온 노드를 추가
         CloseList.Push(CurrentNode);
-		UE_LOG(LogTemp, Warning, TEXT("Push Close : : %d, %d, %d"), CurrentNode.x, CurrentNode.y, CurrentNode.parentIndex);
 
 		// 현재 노드가 도착지점이라면 경로를 Close List에서 찾아서 반환
         if(CurrentNode.x == End.X && CurrentNode.y == End.Y)
@@ -79,14 +77,20 @@ TArray<FVector2D> AStar::FindPath(TArray<TArray<int>> Map, FVector2D Start, FVec
 
 		int parentIndex = CloseList.Num() - 1;
 		// 연결된 노드(배열의 상하좌우)를 Open List에 추가
-		for (int i = 0; i < 4; i++)
+		for (int i = 0; i < 8; i++)
 		{
-			int x = CurrentNode.x + cx[i];
-			int y = CurrentNode.y + cy[i];
+			int x = CurrentNode.x + row[i];
+			int y = CurrentNode.y + col[i];
 
-			// -1 은 막힌것으로 취급
+			// 해당 위치로 이동할 수 있는지 검사
 			if (-1 < x && x < Map.Num() && -1 < y && y < Map.Num() && Map[x][y] != 1)
 			{
+				// 대각선으로 이동일 때 벽으로 막혀있는지 확인
+				if(4 <= i)
+				{
+					if(Map[CurrentNode.x][y] == 1 && Map[x][CurrentNode.y] == 1)
+						continue;
+				}
 
 				// CloseList에 없는 경우에만 Open List에 추가
 				auto* ptr = CloseList.FindByPredicate([x, y](const Node& node){
@@ -97,7 +101,8 @@ TArray<FVector2D> AStar::FindPath(TArray<TArray<int>> Map, FVector2D Start, FVec
                 if(!bAlreadyContain)
                 {
                     Node AddNode(x, y);
-					AddNode.G = CurrentNode.G + 1;
+					// 대각선 방향(i : 4 ~ 7)의 휴리스틱 가중치를 14(√2 * 10)정도로 설정
+					AddNode.G = CurrentNode.G + (x - CurrentNode.x == 0 || y - CurrentNode.y == 0 ? 10 : 14);
 					AddNode.H = (abs(End.X - x) + abs(End.Y - y)) * 10;
 					AddNode.F = AddNode.G + AddNode.H;
 					AddNode.parentIndex = parentIndex;
